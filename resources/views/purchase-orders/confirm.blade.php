@@ -330,14 +330,13 @@
                 </p>
 
                 <div class="mt-6 flex justify-end gap-3">
-                    <button type="button" class="btn-secondary"
-                        @click="$dispatch( 'close-modal', 'confirm-save-modal' )">
+                    <x-secondary-button class="btn" @click="$dispatch( 'close-modal', 'confirm-save-modal' )">
                         Periksa Lagi
-                    </button>
+                    </x-secondary-button>
 
-                    <button type="button" class="btn-primary" @click="confirmSubmit()">
+                    <x-primary-button type="button" class="btn" @click="confirmSubmit()">
                         Simpan
-                    </button>
+                    </x-primary-button>
                 </div>
             </div>
         </x-modal>
