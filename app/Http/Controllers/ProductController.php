@@ -25,7 +25,8 @@ class ProductController extends Controller
 
     public function create()
     {
-        return view('products.create');
+        $newCode = Product::generateCodeProduct();
+        return view('products.create', compact('newCode'));
     }
 
     public function store(StoreProductRequest $request)

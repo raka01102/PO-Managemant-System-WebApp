@@ -33,7 +33,7 @@
                     <div>
                         <x-input-label for="code" :value="__('Kode Produk')" />
                         <x-text-input id="code" class="block w-full mt-1" type="text" name="code"
-                            :value="old('code')" placeholder="contoh: PRD-0001" required autocomplete="code" />
+                            :value="old('code', $newCode)" placeholder="contoh: PRD-0001" required autocomplete="code" />
                         <x-input-error :messages="$errors->get('code')" class="mt-2" />
                     </div>
 
