@@ -34,6 +34,23 @@ class PurchaseOrder extends Model
         return max(0, $this->total_amount - $this->payments()->sum('amount'));
     }
 
+    public static function generatePONumber()
+    {
+        $lastPurchaseOrder = self::latest('id')->first();
+
+        $lastNumber = 0;
+
+        if ($lastPurchaseOrder) {
+            $parts = explode('-', $lastPurchaseOrder->po_number);
+
+            $lastNumber = (int) end($parts);
+        }
+
+        $nextNumber = $lastNumber + 1;
+
+        return 'PO-' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+    }
+
     public function getActivitylogOptions(): SupportLogOptions
     {
         return SupportLogOptions::defaults()

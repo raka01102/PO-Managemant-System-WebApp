@@ -21,19 +21,13 @@ use Illuminate\Http\UploadedFile;
 
 class PurchaseOrderService
 {
-    public function __construct(private OCRService $ocr) {}
-
-    public function get(string $id)
+    public function __construct(private OCRService $ocr)
     {
-        $purchaseOrder = PurchaseOrder::with([
-            'customer',
-            'items.product',
-            'attachments',
-            'logs',
-            'payments',
-        ])->findOrFail($id);
-        return $purchaseOrder;
+        // Untuk sekarang bisa generate PO Number saat create karena user hanya ada 1, jika ingin public PO Number lebih baik saat di store karena bisa didouble jika ada user yang membuka halaman yang sama secara bersamaan dan membuat PO Number yang sama
+
+        // Jika nanti PO Number mau diubah atau user punya pilihan untuk mengubah PO Number maka nanti dibuat fungsi baru, ada yang generateSuggestNumber dan Number yang dibuat user sendiri
     }
+
 
     public function prepareScanData(UploadedFile $document)
     {
@@ -87,17 +81,6 @@ class PurchaseOrderService
         $purchaseOrder->delete();
     }
 
-    private function emptyExtractedData()
-    {
-        return [
-            'po_number' => '',
-            'customer_name' => '',
-            'order_date' => '',
-            'items' => [],
-            'raw_text' => '',
-        ];
-    }
-
     // CREATE METHODS
     private function createPurchaseOrder(array $data, int $customerId, float $total)
     {
@@ -113,31 +96,25 @@ class PurchaseOrderService
 
     private function createCustomer(array $data)
     {
-        $lastCustomer = Customer::latest()->first();
-        $newCustomerCode = 'CUS-' . str_pad(($lastCustomer ? (int) substr($lastCustomer->code, 4) + 1 : 1), 4, '0', STR_PAD_LEFT);
-
         return Customer::firstorcreate(
             [
                 'name' => $data['customer_name'],
             ],
             [
-                'code' => $newCustomerCode,
+                'code' => Customer::generateCodeCustomer(),
             ]
         );
     }
 
     private function createProduct(array $data)
     {
-        $lastProduct = Product::latest()->first();
-        $newProductCode = 'PRD-' . str_pad(($lastProduct ? (int) substr($lastProduct->code, 4) + 1 : 1), 4, '0', STR_PAD_LEFT);
-
         return Product::firstOrCreate(
             [
                 'name' => $data['name'],
                 'unit' => strtolower($data['unit']),
             ],
             [
-                'code' => $newProductCode,
+                'code' => Product::generateCodeProduct(),
             ]
         );
     }
@@ -196,5 +173,15 @@ class PurchaseOrderService
         Storage::disk('public')->move($tempPath, $newPath);
 
         return $newPath;
+    }
+
+    private function emptyExtractedData()
+    {
+        return [
+            'po_number' => PurchaseOrder::generatePONumber(),
+            'customer_name' => null,
+            'items' => [],
+            'raw_text' => '',
+        ];
     }
 }

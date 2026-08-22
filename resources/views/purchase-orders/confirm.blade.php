@@ -1,5 +1,8 @@
 <x-app-layout>
-    <div class="mx-auto max-w-7xl space-y-4 px-4 md:px-6 md:py-4 lg:px-8" x-data="purchaseOrderConfirm({{ json_encode($extracted['items'] ?? []) }})">
+    @php
+        $initialItems = old('items', $extracted['items'] ?? []);
+    @endphp
+    <div class="mx-auto max-w-7xl space-y-4 px-4 md:px-6 md:py-4 lg:px-8" x-data="purchaseOrderConfirm({{ Js::from($initialItems) }})">
         {{-- HEADER --}}
         <div
             class="flex flex-col pt-4 border-b border-slate-200 dark:border-slate-800 md:border-none md:pt-0 md:flex-row md:items-center md:justify-between md:gap-4">
@@ -48,7 +51,7 @@
                                 <div>
                                     <x-input-label for="po_number" :value="__('Nomor Purchase Order')" />
                                     <x-text-input id="po_number" class="block w-full mt-1" type="text"
-                                        name="po_number" :value="old('po_number')" placeholder="contoh: PO-0001" required
+                                        name="po_number" :value="old('po_number', $extracted['po_number'])" placeholder="contoh: PO-0001" required
                                         autocomplete="po_number" />
                                     <x-input-error :messages="$errors->get('po_number')" class="mt-2" />
                                 </div>
@@ -194,7 +197,7 @@
                             </div>
 
                             <div class="overflow-x-auto">
-                                <template x-for="(item, index) in items" :key="index">
+                                <template x-for="(item, index) in items" :key="item.id">
                                     <div
                                         class="p-4 space-y-2 md:space-y-4 border-b border-slate-200 dark:border-slate-800">
                                         <div class="flex items-center justify-between">
@@ -217,7 +220,7 @@
                                                     class="block w-full mt-1" type="text"
                                                     x-bind:name="`items[${index}][name]`" x-model="item.name"
                                                     placeholder="contoh: Kertas A4" required />
-                                                <div x-show="errors[`items.${index}.name`]"
+                                                <div x-cloak x-show="errors[`items.${index}.name`]"
                                                     class="mt-2 text-sm text-red-600"
                                                     x-text="errors[`items.${index}.name`]?.[0]">
                                                 </div>
@@ -230,7 +233,7 @@
                                                     class="block w-full mt-1" type="text"
                                                     x-bind:name="`items[${index}][unit]`" x-model="item.unit"
                                                     placeholder="contoh: meter" required />
-                                                <div x-show="errors[`items.${index}.unit`]"
+                                                <div x-cloak x-show="errors[`items.${index}.unit`]"
                                                     class="mt-2 text-sm text-red-600"
                                                     x-text="errors[`items.${index}.unit`]?.[0]"></div>
                                             </div>
@@ -244,7 +247,7 @@
                                                     x-bind:name="`items[${index}][price_at_time]`"
                                                     x-model="item.price_at_time" placeholder="contoh: 10000"
                                                     oninput="this.value = this.value.replace(/\D/g, '')" required />
-                                                <div x-show="errors[`items.${index}.price_at_time`]"
+                                                <div x-cloak x-show="errors[`items.${index}.price_at_time`]"
                                                     class="mt-2 text-sm text-red-600"
                                                     x-text="errors[`items.${index}.price_at_time`]?.[0]">
                                                 </div>
@@ -259,7 +262,7 @@
                                                     x-bind:name="`items[${index}][quantity]`" x-model="item.quantity"
                                                     placeholder="contoh: 10"
                                                     oninput="this.value = this.value.replace(/\D/g, '')" required />
-                                                <div x-show="errors[`items.${index}.quantity`]"
+                                                <div x-cloak x-show="errors[`items.${index}.quantity`]"
                                                     class="mt-2 text-sm text-red-600"
                                                     x-text="errors[`items.${index}.quantity`]?.[0]"></div>
                                             </div>
@@ -269,7 +272,7 @@
                                             <p class="font-semibold">Total Harga</p>
 
                                             <p class="mt-1 text-2xl font-black text-primary-600"
-                                                x-text="formatRupiah(subTotal)">
+                                                x-text="formatRupiah(itemSubTotal(item))">
                                             </p>
                                         </div>
                                 </template>
@@ -284,7 +287,7 @@
                                 </x-secondary-button>
                             </a>
 
-                            <x-primary-button class="btn-left-icon">
+                            <x-primary-button type="button" class="btn-left-icon" @click="submitForm()">
                                 <span class="h-6 w-6">
                                     <i class="fa-solid fa-floppy-disk"></i>
                                 </span>

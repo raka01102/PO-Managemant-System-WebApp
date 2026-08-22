@@ -24,10 +24,10 @@ class StorePurchaseOrderRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'po_number'     => ['required', 'string', 'max:50'],
+            'po_number'     => ['required', 'string', 'max:50', 'unique:purchase_orders,po_number'],
             'customer_name' => ['required', 'string', 'max:100'],
             'order_date'    => ['required', 'date'],
-            'file_path'     => ['required', 'string'],
+            'file_path'     => ['required', 'string', "starts_with:temp_scans/"],
             'items'         => ['required', 'array', 'min:1'],
             'items.*.name' => ['required', 'string', 'max:100'],
             'items.*.quantity'          => ['required', 'integer', 'min:1'],
