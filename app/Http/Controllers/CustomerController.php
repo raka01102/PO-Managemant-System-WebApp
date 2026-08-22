@@ -25,7 +25,8 @@ class CustomerController extends Controller
 
     public function create()
     {
-        return view('customers.create');
+        $newCode = Customer::generateCodeCustomer();
+        return view('customers.create', compact('newCode'));
     }
 
     public function search(Request $request)

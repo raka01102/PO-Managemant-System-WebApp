@@ -33,7 +33,7 @@
                     <div>
                         <x-input-label for="code" :value="__('Kode Customer')" />
                         <x-text-input id="code" class="block w-full mt-1" type="text" name="code"
-                            :value="old('code')" placeholder="Masukkan kode customer" required />
+                            :value="old('code', $newCode)" placeholder="Masukkan kode customer" required />
                         <x-input-error :messages="$errors->get('code')" class="mt-2" />
                     </div>
 
