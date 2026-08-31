@@ -109,11 +109,13 @@
                             <p class="text-xs text-slate-500">{{ $firstItem->quantity }} Barang</p>
                         </div>
 
-                        @if ($otherItemsCount > 0)
-                            <p class="text-base">
-                                +{{ $otherItemsCount }} Barang Lainnya
-                            </p>
-                        @endif
+                        <div class="min-h-6">
+                            @if ($otherItemsCount > 0)
+                                <p class="text-base">
+                                    +{{ $otherItemsCount }} Barang Lainnya
+                                </p>
+                            @endif
+                        </div>
 
                         <div class="flex justify-between items-center">
                             <div class="flex flex-col">
