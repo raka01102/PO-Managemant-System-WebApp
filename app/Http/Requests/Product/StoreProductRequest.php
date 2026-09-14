@@ -4,6 +4,7 @@ namespace App\Http\Requests\Product;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreProductRequest extends FormRequest
 {
@@ -23,7 +24,7 @@ class StoreProductRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'code' => ['required', 'string', 'max:50'],
+            'code' => ['required', 'string', 'max:50', Rule::unique('products', 'code')],
             'name' => ['required', 'string', 'max:100'],
             'unit' => ['required', 'string', 'max:100'],
             'price' => ['required', 'numeric', 'min:0'],

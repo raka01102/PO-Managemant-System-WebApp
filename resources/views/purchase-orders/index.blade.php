@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div class="mx-auto max-w-7xl space-y-4 px-4 md:px-6 md:py-4 lg:px-8" x-data="purchaseOrderManager()">
+    <div class="content" x-data="purchaseOrderManager()" data-delete-url="{{ route('purchase-orders.destroy', ':id') }}">
         {{-- HEADER --}}
         <div
             class="flex pt-4 border-b border-slate-200 dark:border-slate-800 md:border-none md:pt-0 md:flex-row items-center md:justify-between">
@@ -126,7 +126,9 @@
                             </div>
 
                             <div class="flex gap-2">
-                                <x-danger-button @click="$dispatch('open-modal', 'delete-po-modal')" class="btn-icon">
+                                <x-danger-button
+                                    @click="initDelete({{ $purchaseOrder->id }}, {{ Js::from($purchaseOrder->po_number) }})"
+                                    class="btn-icon">
                                     <span class="w-6 h-6">
                                         <i class="fa-solid fa-trash"></i>
                                     </span>
@@ -163,8 +165,7 @@
 
                 <p>Data yang telah dihapus tidak bisa dikembalikan. Apakah anda ingin melakukan tindakan ini?</p>
 
-                <form action="{{ route('purchase-orders.destroy', $purchaseOrder->id) }}" method="POST"
-                    class="flex items-center justify-end gap-2 md:gap-4">
+                <form :action="actionUrl" method="POST" class="flex items-center justify-end gap-2 md:gap-4">
                     @csrf
                     @method('DELETE')
 

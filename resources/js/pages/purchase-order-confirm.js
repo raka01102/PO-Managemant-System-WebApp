@@ -1,3 +1,5 @@
+import { createEmptyItem, calculateItemSubTotal, calculateGrandTotal, calculateTotalQty } from "../utils/poCalculations"
+
 window.purchaseOrderConfirm = (initialItems = []) => ({
 
     items: [],
@@ -8,11 +10,10 @@ window.purchaseOrderConfirm = (initialItems = []) => ({
 
     init() {
         if (!Array.isArray(initialItems) || initialItems.length === 0) {
-            this.items = [
-                this.createEmptyItem()
-            ]
+            this.items = [createEmptyItem()]
         } else {
             this.items = initialItems.map(item => ({
+                id: item.id ?? '',
                 name: item.name ?? '',
                 quantity: item.quantity ?? '',
                 unit: item.unit ?? '',
@@ -21,20 +22,8 @@ window.purchaseOrderConfirm = (initialItems = []) => ({
         }
     },
 
-    createEmptyItem() {
-        return {
-            id: crypto.randomUUID(),
-            name: '',
-            quantity: '',
-            unit: '',
-            price_at_time: '',
-        }
-    },
-
     addItem() {
-        this.items.push(
-            this.createEmptyItem()
-        )
+        this.items.push(createEmptyItem())
     },
 
     removeItem(index) {

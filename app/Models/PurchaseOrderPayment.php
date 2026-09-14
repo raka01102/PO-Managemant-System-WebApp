@@ -8,6 +8,8 @@ class PurchaseOrderPayment extends Model
 {
     protected $table = 'purchase_order_payments';
 
+    public $timestamps = false;
+
     protected $fillable = [
         'purchase_order_id',
         'payment_date',

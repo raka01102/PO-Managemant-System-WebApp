@@ -110,58 +110,7 @@
                         </div>
 
                         <!-- Preview File (Opsional) -->
-                        <div class="card">
-                            <div class="card-header">
-                                <h2 class="text-lg font-semibold">
-                                    Dokumen Terlampir
-                                </h2>
-                            </div>
-
-                            <div class="card-body flex items-center justify-between">
-                                <div class="flex items-center gap-2 min-w-0 flex-1">
-                                    <span class="h-9 w-9 flex items-center justify-center">
-                                        @if (pathinfo($filePath, PATHINFO_EXTENSION) === 'pdf')
-                                            <i class="fa-solid fa-file-pdf text-2xl text-red-400"></i>
-                                        @else
-                                            <i class="fa-solid fa-file-image text-2xl text-blue-400"></i>
-                                        @endif
-                                    </span>
-                                    <span class="font-medium text-gray-600 dark:text-slate-400 truncate block">
-                                        {{ basename($filePath) }}
-                                    </span>
-                                </div>
-
-                                <div class="flex justify-center">
-                                    @if (in_array(pathinfo($filePath, PATHINFO_EXTENSION), ['jpg', 'jpeg', 'png', 'gif']))
-                                        <x-secondary-button @click="previewDokumen('{{ $filePath }}')"
-                                            class="btn-left-icon shrink-0">
-                                            <i class="fa-solid fa-eye"></i>
-                                            Preview
-                                        </x-secondary-button>
-                                    @endif
-                                </div>
-                            </div>
-
-                            <!-- Image Preview Modal -->
-                            @php
-                                $extension = pathinfo($filePath, PATHINFO_EXTENSION);
-                            @endphp
-
-                            <x-modal name="preview-file-modal" maxWidth="xl">
-                                <div class="p-6">
-                                    @if (in_array(strtolower($extension), ['jpg', 'jpeg', 'png']))
-                                        <img src="{{ asset('storage/' . $filePath) }}" class="w-full rounded-xl">
-                                    @elseif(strtolower($extension) == 'pdf')
-                                        <iframe src="{{ asset('storage/' . $filePath) }}" class=" h-[80vh] w-full ">
-                                        </iframe>
-                                    @else
-                                        <p class=" text-center text-gray-400 italic ">
-                                            Tidak dapat menampilkan preview untuk jenis file ini.
-                                        </p>
-                                    @endif
-                                </div>
-                            </x-modal>
-                        </div>
+                        <x-attachment-section x-data="filePreview" title="Preview File" :attachments="$filePath" />
                     </div>
 
                     <div class="card sticky top-0 z-50 bg-white dark:bg-slate-900 shadow lg:hidden">
@@ -206,8 +155,7 @@
                                                 <span x-text="index + 1"></span>
                                             </h3>
 
-                                            <x-danger-button type="button" class="btn-icon"
-                                                @click="removeItem(index)">
+                                            <x-danger-button type="button" class="btn-icon" @click="removeItem(index)">
                                                 <i class="fa-solid fa-trash"></i>
                                             </x-danger-button>
                                         </div>
@@ -216,10 +164,12 @@
                                             {{-- Name Product --}}
                                             <div>
                                                 <x-input-label x-bind:for="'name-items-' + index" :value="__('Nama Barang')" />
+
                                                 <x-text-input x-bind:id="'name-items-' + index"
                                                     class="block w-full mt-1" type="text"
                                                     x-bind:name="`items[${index}][name]`" x-model="item.name"
                                                     placeholder="contoh: Kertas A4" required />
+
                                                 <div x-cloak x-show="errors[`items.${index}.name`]"
                                                     class="mt-2 text-sm text-red-600"
                                                     x-text="errors[`items.${index}.name`]?.[0]">
@@ -229,10 +179,12 @@
                                             {{-- Unit Product --}}
                                             <div>
                                                 <x-input-label x-bind:for="'unit-items-' + index" :value="__('Satuan')" />
+
                                                 <x-text-input x-bind:id="'unit-items-' + index"
                                                     class="block w-full mt-1" type="text"
                                                     x-bind:name="`items[${index}][unit]`" x-model="item.unit"
                                                     placeholder="contoh: meter" required />
+
                                                 <div x-cloak x-show="errors[`items.${index}.unit`]"
                                                     class="mt-2 text-sm text-red-600"
                                                     x-text="errors[`items.${index}.unit`]?.[0]"></div>
@@ -242,11 +194,13 @@
                                             <div>
                                                 <x-input-label x-bind:for="'price_at_time-items-' + index"
                                                     :value="__('Harga Barang')" />
+
                                                 <x-text-input x-bind:id="'price_at_time-items-' + index"
                                                     class="block w-full mt-1" type="text" inputmode="numeric"
                                                     x-bind:name="`items[${index}][price_at_time]`"
                                                     x-model="item.price_at_time" placeholder="contoh: 10000"
                                                     oninput="this.value = this.value.replace(/\D/g, '')" required />
+
                                                 <div x-cloak x-show="errors[`items.${index}.price_at_time`]"
                                                     class="mt-2 text-sm text-red-600"
                                                     x-text="errors[`items.${index}.price_at_time`]?.[0]">
@@ -257,11 +211,13 @@
                                             <div>
                                                 <x-input-label x-bind:for="'quantity-items-' + index"
                                                     :value="__('Jumlah Barang')" />
+
                                                 <x-text-input x-bind:id="'quantity-items-' + index"
                                                     class="block w-full mt-1" type="text" inputmode="numeric"
                                                     x-bind:name="`items[${index}][quantity]`" x-model="item.quantity"
                                                     placeholder="contoh: 10"
                                                     oninput="this.value = this.value.replace(/\D/g, '')" required />
+
                                                 <div x-cloak x-show="errors[`items.${index}.quantity`]"
                                                     class="mt-2 text-sm text-red-600"
                                                     x-text="errors[`items.${index}.quantity`]?.[0]"></div>
@@ -275,6 +231,7 @@
                                                 x-text="formatRupiah(itemSubTotal(item))">
                                             </p>
                                         </div>
+                                    </div>
                                 </template>
                             </div>
                         </div>

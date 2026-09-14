@@ -38,9 +38,6 @@ class OCRService
         ];
     }
 
-    /**
-     * Extract PO Number dari teks
-     */
     private function extractPONumber(string $text): ?string
     {
         $patterns = [
@@ -58,9 +55,6 @@ class OCRService
         return null;
     }
 
-    /**
-     * Extract Total (jika diperlukan)
-     */
     private function extractTotal(string $text): float
     {
         $patterns = [
@@ -77,67 +71,60 @@ class OCRService
         return 0;
     }
 
-    /**
-     * Extract Items berdasarkan pola baris:
-     * Nama Barang + Qty + Unit
-     */
-private function extractItems(string $text): array
-{
-    $items = [];
+    private function extractItems(string $text): array
+    {
+        $items = [];
 
-    $lines = array_values(array_filter(array_map('trim', explode("\n", $text))));
+        $lines = array_values(array_filter(array_map('trim', explode("\n", $text))));
 
-    $units = ['lembar','meter','pcs','roll','set','box','dus','kg','btg'];
+        $units = ['lembar', 'meter', 'pcs', 'roll', 'set', 'box', 'dus', 'kg', 'btg'];
 
-    for ($i = 0; $i < count($lines); $i++) {
+        for ($i = 0; $i < count($lines); $i++) {
 
-        $current = $lines[$i];
+            $current = $lines[$i];
 
-        // Skip header
-        if (preg_match('/BARANG|KODE|QTY|JUMLAH|SAT/i', $current)) {
-            continue;
-        }
-
-        // 🔥 Jika baris ini adalah nama barang (huruf)
-        if (!preg_match('/^\d+$/', $current) &&
-            !in_array(strtolower($current), $units) &&
-            strlen($current) > 3
-        ) {
-
-            $name = $current;
-            $qty = null;
-            $unit = 'pcs';
-
-            // 🔥 Cek baris berikutnya untuk qty
-            if (isset($lines[$i+1]) && is_numeric($lines[$i+1])) {
-                $qty = (int)$lines[$i+1];
-                $i++; // skip qty line
+            // Skip header
+            if (preg_match('/BARANG|KODE|QTY|JUMLAH|SAT/i', $current)) {
+                continue;
             }
 
-            // 🔥 Cek baris setelah qty untuk unit
-            if (isset($lines[$i+1]) && in_array(strtolower($lines[$i+1]), $units)) {
-                $unit = strtolower($lines[$i+1]);
-                $i++; // skip unit line
-            }
+            // 🔥 Jika baris ini adalah nama barang (huruf)
+            if (
+                !preg_match('/^\d+$/', $current) &&
+                !in_array(strtolower($current), $units) &&
+                strlen($current) > 3
+            ) {
 
-            // Validasi qty tidak besar (hindari tanggal)
-            if ($qty !== null && $qty < 1000) {
-                $items[] = [
-                    'name' => strtoupper($name),
-                    'qty'  => $qty,
-                    'unit' => $unit
-                ];
+                $name = $current;
+                $qty = null;
+                $unit = 'pcs';
+
+                // 🔥 Cek baris berikutnya untuk qty
+                if (isset($lines[$i + 1]) && is_numeric($lines[$i + 1])) {
+                    $qty = (int)$lines[$i + 1];
+                    $i++; // skip qty line
+                }
+
+                // 🔥 Cek baris setelah qty untuk unit
+                if (isset($lines[$i + 1]) && in_array(strtolower($lines[$i + 1]), $units)) {
+                    $unit = strtolower($lines[$i + 1]);
+                    $i++; // skip unit line
+                }
+
+                // Validasi qty tidak besar (hindari tanggal)
+                if ($qty !== null && $qty < 1000) {
+                    $items[] = [
+                        'name' => strtoupper($name),
+                        'qty'  => $qty,
+                        'unit' => $unit
+                    ];
+                }
             }
         }
+
+        return $items;
     }
 
-    return $items;
-}
-
-    /**
-     * Guess Customer berdasarkan nama yang ada di database
-     * (Database kosong tidak masalah — ini hanya cocokkan jika ada)
-     */
     private function guessCustomerName(string $text): ?string
     {
         $customers = Customer::all();

@@ -1,8 +1,7 @@
 <x-app-layout>
     <div class="mx-auto max-w-7xl space-y-4 md:px-6 md:py-4 lg:px-8">
         {{-- HEADER --}}
-        <div
-            class="flex px-4 pt-4 border-b border-slate-200 dark:border-slate-800 md:border-none md:pt-0 md:flex-row items-center md:justify-between">
+        <div class="content-header">
             <a href="{{ route('products.index') }}" class="md:hidden mr-2">
                 <span class="h-8 w-8 md:h-10 md:w-10">
                     <i class="fa-solid fa-arrow-left"></i>

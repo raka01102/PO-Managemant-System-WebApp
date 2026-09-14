@@ -19,17 +19,27 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/', function () {
         return redirect()->route('dashboard');
     });
+
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::post('/purchase-orders/scan', [PurchaseOrderController::class, 'scan'])->name('purchase-orders.scan');
+
     Route::get('/purchase-orders/{purchaseOrder}/shipping', [PurchaseOrderController::class, 'shipping'])->name('purchase-orders.shipping');
+
     Route::patch('/purchase-orders/{purchaseOrder}/shipping', [PurchaseOrderController::class, 'updateShipping'])->name('purchase-orders.shipping.update');
+
     Route::get('/purchase-orders/{purchaseOrder}/payment', [PurchaseOrderController::class, 'payment'])->name('purchase-orders.payment');
+
     Route::patch('/purchase-orders/{purchaseOrder}/payment', [PurchaseOrderController::class, 'updatePayment'])->name('purchase-orders.payment.update');
+
     Route::get('/customers/search', [CustomerController::class, 'search']);
+
     Route::get('/purchase-orders/confirm', [PurchaseOrderController::class, 'confirm'])->name('purchase-orders.confirm');
+
     Route::resource('purchase-orders', PurchaseOrderController::class);
+
     Route::resource('customers', CustomerController::class);
+
     Route::resource('products', ProductController::class);
 });
 

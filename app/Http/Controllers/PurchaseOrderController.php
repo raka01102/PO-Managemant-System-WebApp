@@ -7,17 +7,12 @@ use Illuminate\Http\Request;
 use App\Services\PurchaseOrderService;
 use App\Http\Requests\PurchaseOrder\StorePurchaseOrderRequest;
 use App\Http\Requests\PurchaseOrder\UpdatePurchaseOrderRequest;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
+use App\Http\Requests\PurchaseOrder\UpdatePurchaseOrderPaymentRequest;
+use App\Http\Requests\PurchaseOrder\UpdatePurchaseOrderShippingRequest;
 use App\Models\PurchaseOrder;
-use App\Models\PurchaseOrderItem;
 use App\Models\Customer;
-use App\Models\Product;
-use App\Models\PurchaseOrderAttachment;
-use App\Models\PurchaseOrderLog;
 use App\Services\OCRService;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
 
 class PurchaseOrderController extends Controller
 {
@@ -62,9 +57,8 @@ class PurchaseOrderController extends Controller
             'customer',
             'items.product',
             'attachments',
-            'logs',
             'payments',
-        )->latest()->paginate(12);
+        );
         return view('purchase-orders.show', compact('purchaseOrder'));
     }
 
@@ -73,9 +67,9 @@ class PurchaseOrderController extends Controller
         $purchaseOrder->load('customer', 'items.product', 'attachments', 'logs');
         $items = $purchaseOrder->items->map(function ($item) {
             return [
-                'id' => $item->product->id,
+                'id' => $item->id,
                 'name' => $item->product->name ?? 'Produk telah dihapus',
-                'qty' => $item->quantity,
+                'quantity' => $item->quantity,
                 'unit' => $item->product->unit,
                 'price_at_time' => $item->price_at_time,
             ];
@@ -106,128 +100,48 @@ class PurchaseOrderController extends Controller
         return redirect()->route('purchase-orders.index')->with('success', 'PO berhasil dibuat');
     }
 
-    public function updateShipping(Request $request, purchaseOrder $purchaseOrder)
+    public function updateShipping(UpdatePurchaseOrderShippingRequest $request, PurchaseOrder $purchaseOrder)
     {
-        $validated = $request->validate([
-            'status' => 'required|in:draft,sent,delivered,completed',
-            'attachment' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
-            'note' => 'nullable|string|max:1000',
-        ]);
-
-        $attachment = null;
-
-        DB::beginTransaction();
-
         try {
-
-            $oldStatus = $purchaseOrder->status;
-
-            $newStatus = match ($oldStatus) {
-                'draft' => 'sent',
-                'sent' => 'delivered',
-                'delivered' => 'completed',
-                default => 'draft',
-            };
-
-            $purchaseOrder->update([
-                'status' => $newStatus,
-            ]);
-
-            PurchaseOrderLog::create([
-                'purchase_order_id' => $purchaseOrder->id,
-                'type' => 'Status Pengiriman',
-                'old_value' => $oldStatus,
-                'new_value' => $newStatus,
-                'note' => $validated['note'],
-            ]);
-
-            if ($request->hasFile('attachment')) {
-                $attachment = $request->file('attachment')->store('po_attachments/shipping', 'public');
-
-                $fileType = match ($validated['status']) {
-                    'sent' => 'Bukti Pengiriman',
-                    'delivered' => 'Bukti Barang Sampai',
-                    'completed' => 'Bukti PO Selesai',
-                    default => null,
-                };
-
-                if ($fileType) {
-                    PurchaseOrderAttachment::create([
-                        'purchase_order_id' => $purchaseOrder->id,
-                        'file_path' => $attachment,
-                        'file_type' => $fileType,
-                    ]);
-                }
-            }
-
-            DB::commit();
+            $this->purchaseOrderService->advanceDeliveryStatus(
+                $purchaseOrder,
+                $request->validated(),
+                $request->file('attachment')
+            );
 
             return redirect()
                 ->route('purchase-orders.index')
                 ->with('success', 'Status Pengiriman PO berhasil diperbarui.');
-        } catch (\Exception $e) {
-
-            DB::rollBack();
+        } catch (\RuntimeException $e) {
 
             return redirect()
                 ->back()
-                ->with('error', 'Gagal update status.');
+                ->with('error', $e->getMessage());
+        } catch (\Throwable $e) {
+
+            report($e);
+
+            return redirect()
+                ->back()
+                ->with('error', 'Gagal update status pengiriman.');
         }
     }
 
-    public function updatePayment(Request $request, PurchaseOrder $purchaseOrder)
+    public function updatePayment(UpdatePurchaseOrderPaymentRequest $request, PurchaseOrder $purchaseOrder)
     {
-        $validated = $request->validate([
-            'is_paid' => 'required|in:0,1',
-            'attachment' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
-            'note' => 'nullable|string|max:1000',
-        ]);
-
-        $attachment = null;
-
-        DB::beginTransaction();
-
         try {
-
-            if ($request->hasFile('attachment')) {
-                $attachment = $request
-                    ->file('attachment')
-                    ->store(
-                        'purchase-orders/payment',
-                        'public'
-                    );
-            }
-
-            $oldPayment = $purchaseOrder->is_paid ? 'paid' : 'unpaid';
-
-            $purchaseOrder->update([
-                'is_paid' => true,
-            ]);
-
-            $newPayment = $request->is_paid ? 'paid' : 'unpaid';
-
-            PurchaseOrderLog::create([
-                'purchase_order_id' => $purchaseOrder->id,
-                'type' => 'payment',
-                'old_value' => $oldPayment,
-                'new_value' => $newPayment,
-                'note' => $request->note,
-            ]);
-
-            PurchaseOrderAttachment::create([
-                'purchase_order_id' => $purchaseOrder->id,
-                'file_path' => $attachment,
-                'file_type' => 'Pembayaran',
-            ]);
-
-            DB::commit();
+            $this->purchaseOrderService->recordPayment(
+                $purchaseOrder,
+                $request->validated(),
+                $request->file('attachment')
+            );
 
             return redirect()
                 ->route('purchase-orders.index')
                 ->with('success', 'Pembayaran berhasil diperbarui.');
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
 
-            DB::rollBack();
+            report($e);
 
             return redirect()
                 ->back()
@@ -235,121 +149,18 @@ class PurchaseOrderController extends Controller
         }
     }
 
-    public function update(Request $request, PurchaseOrder $purchaseOrder)
+    public function update(UpdatePurchaseOrderRequest $request, PurchaseOrder $purchaseOrder)
     {
-        // dd($request->all());
-        // dd($purchaseOrder->id);
-        $validated = $request->validate([
-            'po_number'             => 'required|string|unique:purchase_orders,po_number,' . $purchaseOrder->id,
-            'customer_name'         => 'required|string',
-            'order_date'            => 'required|date',
-            'items'                 => 'required|array|min:1',
-            'items.*.id'            => 'nullable|string',
-            'items.*.name'          => 'required|string',
-            'items.*.qty'           => 'required|integer|min:1',
-            'items.*.unit'          => 'required|string',
-            'items.*.price_at_time' => 'required|numeric|min:0',
-        ]);
-
-        // dd($validated);
-
-        DB::beginTransaction();
-
         try {
-            $customer = Customer::firstOrCreate(
-                ['name' => $validated['customer_name']],
-                ['code' => 'CUST-' . strtoupper(Str::random(6))],
-            );
+            $this->purchaseOrderService->update($purchaseOrder, $request->validated());
 
-            $totalAmount = collect($validated['items'])
-                ->sum(function ($item) {
-                    return ($item['qty'] ?? 0)
-                        * ($item['price_at_time'] ?? 0);
-                });
-            // dd($totalAmount);
-
-            $purchaseOrder->update(
-                [
-                    'po_number' => $validated['po_number'],
-                    'customer_id' => $customer->id,
-                    'order_date' => $validated['order_date'],
-                    'total_amount' => $totalAmount,
-                ]
-            );
-
-            $existingItemsIds = [];
-
-            foreach ($validated['items'] as $item) {
-                $product = Product::firstOrCreate(
-                    [
-                        'name' => strtoupper($item['name']),
-                        'unit' => strtolower($item['unit'])
-                    ],
-                    [
-                        'code'  => 'PRD-' . strtoupper(Str::random(6)),
-                        'price' => $item['price_at_time'],
-                    ]
-                );
-
-                // dd($product);
-
-                $subtotal = $item['qty'] * $item['price_at_time'];
-
-                // dd($subtotal);
-
-                if (!empty($item['id'])) {
-                    $poItem = PurchaseOrderItem::where(
-                        'purchase_order_id',
-                        $purchaseOrder->id,
-                    )
-                        ->where(
-                            'product_id',
-                            $item['id'],
-                        )
-                        ->first();
-
-                    // dd($poItem);
-
-                    if ($poItem) {
-                        $poItem->update([
-                            'product_id' => $product->id,
-                            'quantity' => $item['qty'],
-                            'price_at_time' => $item['price_at_time'],
-                            'subtotal' => $subtotal,
-                        ]);
-
-                        $existingItemsIds[] = $poItem->id;
-                    }
-                } else {
-                    $newItem = purchaseOrderItem::create([
-                        'purchase_order_id' => $purchaseOrder->id,
-                        'product_id' => $product->id,
-                        'quantity' => $item['qty'],
-                        'price_at_time' => $item['price_at_time'],
-                        'subtotal' => $subtotal,
-                    ]);
-
-                    $existingItemsIds[] = $newItem->id;
-                }
-            }
-
-            PurchaseOrderItem::where(
-                'purchase_order_id',
-                $purchaseOrder->id,
-            )
-                ->whereNotIn(
-                    'id',
-                    $existingItemsIds,
-                )
-                ->delete();
-
-            DB::commit();
             return redirect()
                 ->route('purchase-orders.index')
                 ->with('success', 'PO berhasil diperbarui.');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            // dd($e->getMessage());
+        } catch (\Throwable $e) {
+
+            report($e);
+
             return redirect()
                 ->back()
                 ->with('error', 'Gagal memperbarui PO. Silakan coba lagi.');
