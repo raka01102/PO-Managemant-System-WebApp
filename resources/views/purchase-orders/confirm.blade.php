@@ -1,6 +1,15 @@
 <x-app-layout>
     @php
         $initialItems = old('items', $extracted['items'] ?? []);
+
+        $previewAttachments = $filePath
+            ? collect([
+                (object) [
+                    'file_path' => $filePath,
+                    'file_type' => 'Dokumen PO',
+                ],
+            ])
+            : collect();
     @endphp
     <div class="mx-auto max-w-7xl space-y-4 px-4 md:px-6 md:py-4 lg:px-8" x-data="purchaseOrderConfirm({{ Js::from($initialItems) }})">
         {{-- HEADER --}}
@@ -110,7 +119,7 @@
                         </div>
 
                         <!-- Preview File (Opsional) -->
-                        <x-attachment-section x-data="filePreview" title="Preview File" :attachments="$filePath" />
+                        <x-attachment-section x-data="filePreview" title="Preview File" :attachments="$previewAttachments" />
                     </div>
 
                     <div class="card sticky top-0 z-50 bg-white dark:bg-slate-900 shadow lg:hidden">
