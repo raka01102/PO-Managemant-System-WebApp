@@ -10,20 +10,27 @@ window.purchaseOrderConfirm = (initialItems = []) => ({
 
     init() {
         if (!Array.isArray(initialItems) || initialItems.length === 0) {
-            this.items = [createEmptyItem()]
+            this.items = [this.createItem()]
         } else {
-            this.items = initialItems.map(item => ({
-                id: item.id ?? '',
-                name: item.name ?? '',
-                quantity: item.quantity ?? '',
-                unit: item.unit ?? '',
-                price_at_time: item.price_at_time ?? '',
-            }))
+            this.items = initialItems.map(item => this.createItem(item))
+        }
+    },
+
+    createItem(source = null) {
+        const base = createEmptyItem()
+
+        return {
+            uid: crypto.randomUUID(),
+            id: source?.id ?? '',
+            name: source?.name ?? '',
+            quantity: source?.quantity ?? '',
+            unit: source?.unit ?? '',
+            price_at_time: source?.price_at_time ?? '',
         }
     },
 
     addItem() {
-        this.items.push(createEmptyItem())
+        this.items.push(this.createItem())
     },
 
     removeItem(index) {
@@ -106,33 +113,15 @@ window.purchaseOrderConfirm = (initialItems = []) => ({
     },
 
     get totalQty() {
-        return this.items.reduce(
-            (sum, item) => {
-                return sum + (
-                    Number(item.quantity) || 0
-                )
-            },
-            0
-        )
+        return calculateTotalQty(this.items)
     },
 
     itemSubTotal(item) {
-        const quantity =
-            Number(item.quantity) || 0
-
-        const price =
-            Number(item.price_at_time) || 0
-
-        return quantity * price
+        return calculateItemSubTotal(item)
     },
 
     get grandTotal() {
-        return this.items.reduce(
-            (sum, item) => {
-                return sum + this.itemSubTotal(item)
-            },
-            0
-        )
+        return calculateGrandTotal(this.items)
     },
 
     formatRupiah(value) {

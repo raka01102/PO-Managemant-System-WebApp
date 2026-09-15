@@ -143,6 +143,10 @@
                                         $status = 'Semua Barang Telah Dikirim';
                                         break;
 
+                                    case 'completed':
+                                        $status = 'PO Selesai';
+                                        break;
+
                                     default:
                                         $status = 'Dibuat';
                                         break;

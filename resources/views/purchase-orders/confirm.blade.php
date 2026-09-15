@@ -155,7 +155,7 @@
                             </div>
 
                             <div class="overflow-x-auto">
-                                <template x-for="(item, index) in items" :key="item.id">
+                                <template x-for="(item, index) in items" :key="item.uid">
                                     <div
                                         class="p-4 space-y-2 md:space-y-4 border-b border-slate-200 dark:border-slate-800">
                                         <div class="flex items-center justify-between">

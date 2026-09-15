@@ -7,24 +7,23 @@ use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
-    public function index(PurchaseOrder $purchaseOrder)
+    public function index()
     {
-        // $stats = [
-        //     'total'  => PurchaseOrder::count(),
-        //     'unpaid' => PurchaseOrder::where('is_paid', false)->count(),
-        //     // Contoh PO tanpa Surat Jalan (asumsi ada relasi 'attachments')
-        //     // 'no_sj'  => PurchaseOrder::whereDoesntHave('attachments', function($q) {
-        //     //                 $q->where('status', 'draft');
-        //     //             })->count(),
-        //     'no_sj'  => PurchaseOrder::where('status', 'draft')->count(),
-        //     'delivered' => PurchaseOrder::where('status', 'delivered')->count(),
-        // ];
-
         $recentOrders = PurchaseOrder::with(['customer', 'logs'])
             ->latest()
             ->take(6)
             ->get();
 
-        return view('dashboard', compact('recentOrders'));
+        $stats = PurchaseOrder::query()
+            ->selectRaw("
+                COUNT(*) as total,
+                SUM(CASE WHEN payment_status = 'unpaid' THEN 1 ELSE 0 END) as unpaid,
+                SUM(CASE WHEN delivery_status = 'draft' THEN 1 ELSE 0 END) as no_sj,
+                SUM(CASE WHEN delivery_status = 'completed' THEN 1 ELSE 0 END) as delivered
+            ")
+            ->first()
+            ->toArray();
+
+        return view('dashboard', compact('recentOrders', 'stats'));
     }
 }
