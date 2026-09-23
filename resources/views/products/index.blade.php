@@ -25,28 +25,31 @@
             <x-alert type="warning" title="Perhatian" message="Data belum lengkap." />
         @endif
 
-        {{-- Search --}}
-        <div class="flex items-center gap-2 md:gap-4">
+        {{-- Search & Filter --}}
+        <form method="GET" action="{{ route('products.index') }}" class="flex items-center gap-2 md:gap-4">
             <div class="flex-1 relative">
                 <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
                     <i class="fa-solid fa-magnifying-glass"></i>
                 </span>
 
-                <input type="text" placeholder="Cari nama produk"
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama produk"
                     class="w-full rounded-xl border border-slate-200 py-3 lg:py-2 pl-10 pr-4 dark:border-slate-700 dark:bg-slate-950 dark:text-white">
             </div>
 
-            <x-secondary-button class="btn-left-icon" @click="$dispatch('open-modal', '')">
-                <span class="h-6 w-6">
-                    <i class="fa-solid fa-sliders"></i>
-                </span>
-                Filter
-            </x-secondary-button>
-        </div>
+            <select name="unit" onchange="this.form.submit()"
+                class="rounded-xl border border-slate-200 py-3 lg:py-2 px-4 dark:border-slate-700 dark:bg-slate-950 dark:text-white">
+                <option value="">Semua Satuan</option>
+                @foreach ($units as $unitOption)
+                    <option value="{{ $unitOption }}" @selected(request('unit') === $unitOption)>
+                        {{ $unitOption }}
+                    </option>
+                @endforeach
+            </select>
+        </form>
 
         {{-- Card Product --}}
         <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2 md:gap-4">
-            @foreach ($products as $product)
+            @forelse ($products as $product)
                 <div class="card">
                     <div class="card-header flex items-center justify-between">
                         <div class="flex gap-1 items-center">
@@ -95,7 +98,16 @@
                         </div>
                     </div>
                 </div>
-            @endforeach
+            @empty
+                <div class="col-span-full text-center text-sm text-slate-500 py-8">
+                    Tidak ada produk yang cocok dengan pencarian.
+                </div>
+            @endforelse
+        </div>
+
+        {{-- PAGINATION --}}
+        <div>
+            {{ $products->links() }}
         </div>
 
         <!-- DELETE MODAL -->

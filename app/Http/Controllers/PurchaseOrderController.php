@@ -26,12 +26,36 @@ class PurchaseOrderController extends Controller
     // GET METHODS
     public function index(Request $request, PurchaseOrder $purchaseOrder) // GET /purchase-orders.index
     {
+        $search = $request->query('search');
+        $filter = $request->query('filter');
+
         $purchaseOrders = $purchaseOrder->with([
             'customer',
             'items.product',
             'logs',
             'payments',
-        ])->latest()->paginate(12);
+        ])
+            ->when($search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('po_number', 'like', "%{$search}%")
+                        ->orWhereHas('customer', function ($customerQuery) use ($search) {
+                            $customerQuery->where('name', 'like', "%{$search}%");
+                        });
+                });
+            })
+            ->when($filter, function ($query, $filter) {
+                match ($filter) {
+                    'no_sj' => $query->where('delivery_status', 'draft'),
+                    'shipping' => $query->whereIn('delivery_status', ['partially_delivered', 'delivered']),
+                    'unpaid' => $query->where('delivery_status', 'completed')->where('payment_status', 'unpaid'),
+                    'partial' => $query->where('delivery_status', 'completed')->where('payment_status', 'partial'),
+                    'paid' => $query->where('delivery_status', 'completed')->where('payment_status', 'paid'),
+                    default => null,
+                };
+            })
+            ->latest()
+            ->paginate(12)
+            ->withQueryString();
 
         return view('purchase-orders.index', compact('purchaseOrders'));
     }

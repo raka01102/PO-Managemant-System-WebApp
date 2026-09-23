@@ -25,28 +25,32 @@
             <x-alert type="warning" title="Perhatian" message="Data belum lengkap." />
         @endif
 
-        {{-- Search --}}
-        <div class="flex items-center gap-2 md:gap-4">
+        {{-- Search & Filter --}}
+        <form method="GET" action="{{ route('purchase-orders.index') }}" class="flex items-center gap-2 md:gap-4">
             <div class="flex-1 relative">
                 <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
                     <i class="fa-solid fa-magnifying-glass"></i>
                 </span>
 
-                <input type="text" placeholder="Cari nomor PO atau customer..."
+                <input type="text" name="search" value="{{ request('search') }}"
+                    placeholder="Cari nomor PO atau customer..."
                     class="w-full rounded-xl border border-slate-200 py-3 lg:py-2 pl-10 pr-4 dark:border-slate-700 dark:bg-slate-950 dark:text-white">
             </div>
 
-            <x-secondary-button class="btn-left-icon" @click="$dispatch('open-modal', '')">
-                <span class="h-6 w-6">
-                    <i class="fa-solid fa-sliders"></i>
-                </span>
-                Filter
-            </x-secondary-button>
-        </div>
+            <select name="filter" onchange="this.form.submit()"
+                class="rounded-xl border border-slate-200 py-3 lg:py-2 px-4 dark:border-slate-700 dark:bg-slate-950 dark:text-white">
+                <option value="">Semua Status</option>
+                <option value="no_sj" @selected(request('filter') === 'no_sj')>Diproses (Belum SJ)</option>
+                <option value="shipping" @selected(request('filter') === 'shipping')>Dikirim</option>
+                <option value="unpaid" @selected(request('filter') === 'unpaid')>Belum Dibayar</option>
+                <option value="partial" @selected(request('filter') === 'partial')>Dibayar Sebagian</option>
+                <option value="paid" @selected(request('filter') === 'paid')>Selesai</option>
+            </select>
+        </form>
 
         {{-- Card PO --}}
         <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2 md:gap-4">
-            @foreach ($purchaseOrders as $purchaseOrder)
+            @forelse ($purchaseOrders as $purchaseOrder)
                 <div class="card">
                     <div class="card-header flex items-center justify-between">
                         <div class="flex gap-1 items-center">
@@ -103,10 +107,14 @@
                             $otherItemsCount = $purchaseOrder->items->count() - 1;
                         @endphp
                         <div class="flex flex-col">
-                            <p class="text-base font-semibold">{{ $firstItem->product['code'] }} |
-                                {{ $firstItem->product['name'] }}</p>
+                            @if ($firstItem)
+                                <p class="text-base font-semibold">{{ $firstItem->product['code'] ?? '' }} |
+                                    {{ $firstItem->product['name'] ?? 'Produk telah dihapus' }}</p>
 
-                            <p class="text-xs text-slate-500">{{ $firstItem->quantity }} Barang</p>
+                                <p class="text-xs text-slate-500">{{ $firstItem->quantity }} Barang</p>
+                            @else
+                                <p class="text-xs text-slate-500">Belum ada item</p>
+                            @endif
                         </div>
 
                         <div class="min-h-6">
@@ -145,7 +153,16 @@
                         </div>
                     </div>
                 </div>
-            @endforeach
+            @empty
+                <div class="col-span-full text-center text-sm text-slate-500 py-8">
+                    Tidak ada Purchase Order yang cocok dengan pencarian.
+                </div>
+            @endforelse
+        </div>
+
+        {{-- PAGINATION --}}
+        <div>
+            {{ $purchaseOrders->links() }}
         </div>
 
         <!-- DELETE MODAL -->

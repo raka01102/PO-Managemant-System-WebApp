@@ -17,10 +17,32 @@ class ProductController extends Controller
         $this->productService = $productService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::latest()->paginate(10);
-        return view('products.index', compact('products'));
+        $search = $request->query('search');
+        $unit = $request->query('unit');
+
+        $products = Product::query()
+            ->when($search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('code', 'like', "%{$search}%");
+                });
+            })
+            ->when($unit, function ($query, $unit) {
+                $query->where('unit', $unit);
+            })
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        $units = Product::query()
+            ->select('unit')
+            ->distinct()
+            ->orderBy('unit')
+            ->pluck('unit');
+
+        return view('products.index', compact('products', 'units'));
     }
 
     public function create()

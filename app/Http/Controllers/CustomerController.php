@@ -17,9 +17,21 @@ class CustomerController extends Controller
         $this->customerService = $customerService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $customers = Customer::latest()->paginate(12);
+        $search = $request->query('search');
+
+        $customers = Customer::query()
+            ->when($search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('code', 'like', "%{$search}%");
+                });
+            })
+            ->latest()
+            ->paginate(12)
+            ->withQueryString();
+
         return view('customers.index', compact('customers'));
     }
 
