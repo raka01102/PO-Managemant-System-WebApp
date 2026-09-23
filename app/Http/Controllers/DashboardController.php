@@ -17,9 +17,9 @@ class DashboardController extends Controller
         $stats = PurchaseOrder::query()
             ->selectRaw("
                 COUNT(*) as total,
-                SUM(CASE WHEN payment_status = 'unpaid' THEN 1 ELSE 0 END) as unpaid,
-                SUM(CASE WHEN delivery_status = 'draft' THEN 1 ELSE 0 END) as no_sj,
-                SUM(CASE WHEN delivery_status = 'completed' THEN 1 ELSE 0 END) as delivered
+                SUM(CASE WHEN payment_status = 'paid' THEN 0 ELSE 1 END) as belum_lunas,
+                SUM(CASE WHEN delivery_status = 'delivered' THEN 0 ELSE 1 END) as proses_pengiriman,
+                SUM(CASE WHEN delivery_status = 'delivered' && payment_status = 'paid' THEN 1 ELSE 0 END) as completed
             ")
             ->first()
             ->toArray();

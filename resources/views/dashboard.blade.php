@@ -47,11 +47,11 @@
                     <div class="flex items-start justify-between">
                         <div class="flex flex-col gap-2">
                             <p class="text-base text-slate-500 dark:text-slate-400">
-                                Belum Dibayar
+                                Belum Lunas
                             </p>
 
                             <p class="text-2xl font-semibold">
-                                {{ $stats['unpaid'] ?? 0 }}
+                                {{ $stats['belum_lunas'] ?? 0 }}
                             </p>
                         </div>
 
@@ -70,11 +70,11 @@
                     <div class="flex items-start justify-between">
                         <div class="flex flex-col gap-2">
                             <p class="text-base text-slate-500 dark:text-slate-400">
-                                Proses Pengiriman
+                                Pengiriman
                             </p>
 
                             <p class="text-2xl font-semibold">
-                                {{ $stats['no_sj'] ?? 0 }}
+                                {{ $stats['proses_pengiriman'] ?? 0 }}
                             </p>
                         </div>
 
@@ -92,11 +92,11 @@
                     <div class="flex items-start justify-between">
                         <div class="flex flex-col gap-2">
                             <p class="text-base text-slate-500 dark:text-slate-400">
-                                Sudah Selesai
+                                Selesai
                             </p>
 
                             <p class="text-2xl font-semibold">
-                                {{ $stats['delivered'] ?? 0 }}
+                                {{ $stats['completed'] ?? 0 }}
                             </p>
                         </div>
 
