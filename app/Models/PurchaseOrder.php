@@ -3,8 +3,10 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Traits\GenerateCode;
 use Spatie\Activitylog\Models\Concerns\LogsActivity as ConcernsLogsActivity;
 use Spatie\Activitylog\Support\LogOptions as SupportLogOptions;
 
@@ -12,6 +14,7 @@ class PurchaseOrder extends Model
 {
     use HasFactory;
     use SoftDeletes;
+    use GenerateCode;
     use ConcernsLogsActivity;
 
     protected $table = 'purchase_orders';
@@ -52,6 +55,16 @@ class PurchaseOrder extends Model
         ],
     ];
 
+    public function scopeGetStat(Builder $query)
+    {
+        return $query->selectRaw(
+            "COUNT(*) as total,
+            SUM(CASE WHEN payment_status != 'paid' THEN 1 ELSE 0 END) as belum_lunas,
+            SUM(CASE WHEN delivery_status != 'delivered' THEN 1 ELSE 0 END) as proses_pengiriman,
+            SUM(CASE WHEN delivery_status = 'delivered' AND payment_status = 'paid' THEN 1 ELSE 0 END) as completed"
+        )->first()?->toArray() ?? [];
+    }
+
     public function getRemainingAmountAttribute()
     {
         return max(0, $this->total_amount - $this->payments()->sum('amount'));
@@ -59,19 +72,7 @@ class PurchaseOrder extends Model
 
     public static function generatePONumber()
     {
-        $lastPurchaseOrder = self::latest('id')->first();
-
-        $lastNumber = 0;
-
-        if ($lastPurchaseOrder) {
-            $parts = explode('-', $lastPurchaseOrder->po_number);
-
-            $lastNumber = (int) end($parts);
-        }
-
-        $nextNumber = $lastNumber + 1;
-
-        return 'PO-' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+        return static::generateCode('PO', 'po_number');
     }
 
     public function getAttachmentsByType(String $type)

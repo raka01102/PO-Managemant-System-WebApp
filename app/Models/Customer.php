@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Traits\GenerateCode;
 
 class Customer extends Model
 {
     use SoftDeletes;
+    use GenerateCode;
     protected $table = 'customers';
 
     protected $fillable = [
@@ -19,19 +21,7 @@ class Customer extends Model
 
     public static function generateCodeCustomer()
     {
-        $lastCustomer = self::latest('id')->first();
-
-        $lastCode = 0;
-
-        if ($lastCustomer) {
-            $parts = explode('-', $lastCustomer->code);
-
-            $lastCode = (int) end($parts);
-        }
-
-        $nextCode = $lastCode + 1;
-
-        return 'CUS-' . str_pad($nextCode, 4, '0', STR_PAD_LEFT);
+        return static::generateCode('CUS', 'code');
     }
 
     public function purchaseOrders()

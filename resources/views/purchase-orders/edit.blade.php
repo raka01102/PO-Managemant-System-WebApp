@@ -4,17 +4,8 @@
         @js(old('items', $items)),
         @js($errors->toArray())
     )">
-        <div class="content-header">
-            <a href="{{ route('purchase-orders.show', $purchaseOrder) }}" class="md:hidden mr-2">
-                <span class="h-8 w-8 md:h-10 md:w-10">
-                    <i class="fa-solid fa-arrow-left"></i>
-                </span>
-            </a>
-
-            <h1 class="page-title">
-                Edit Purchase Order
-            </h1>
-        </div>
+        <x-content-header :isIndex="false" title="Edit Purchase Order"
+            unDoUrl="{{ route('purchase-orders.show', $purchaseOrder) }}" />
 
         <form action="{{ route('purchase-orders.update', $purchaseOrder) }}" method="POST" id="purchaseOrderForm">
             @csrf
@@ -160,22 +151,8 @@
                     </div>
                 </div>
 
-                {{-- ACTION --}}
-                <x-bottom-action-bar :showOnDesktop="true">
-                    <a href="{{ route('purchase-orders.show', $purchaseOrder) }}" class="hidden md:block">
-                        <x-secondary-button class="btn-left-icon">
-                            <i class="fa-solid fa-arrow-left"></i>
-                            Batal
-                        </x-secondary-button>
-                    </a>
-
-                    <x-primary-button class="btn-left-icon w-full md:w-auto">
-                        <span class="h-6 w-6">
-                            <i class="fa-solid fa-plus"></i>
-                        </span>
-                        Simpan Perubahan
-                    </x-primary-button>
-                </x-bottom-action-bar>
+                <x-bottom-action-bar :showOnDesktop="true" type="edit"
+                    buttonUrl="{{ route('purchase-orders.show', $purchaseOrder) }}" />
             </div>
         </form>
     </div>

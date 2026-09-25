@@ -1,14 +1,7 @@
 <x-app-layout>
-    <div class="mx-auto max-w-4xl px-4 py-6">
-        <div class="mb-6">
-            <h1 class="page-title">
-                Update Pengiriman
-            </h1>
-
-            <p class="page-subtitle">
-                {{ $purchaseOrder->po_number }}
-            </p>
-        </div>
+    <div class="content">
+        <x-content-header :isIndex="false" title="Update Pengiriman"
+            unDoUrl="{{ route('purchase-orders.show', $purchaseOrder) }}" />
 
         @php
             $steps = [

@@ -33,7 +33,7 @@ class ProductController extends Controller
                 $query->where('unit', $unit);
             })
             ->latest()
-            ->paginate(10)
+            ->paginate(12)
             ->withQueryString();
 
         $units = Product::query()

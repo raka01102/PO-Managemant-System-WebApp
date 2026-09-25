@@ -1,21 +1,6 @@
 <x-app-layout>
-    <div class="mx-auto max-w-7xl space-y-4 px-4 md:px-6 md:py-4 lg:px-8">
-        {{-- HEADER --}}
-        <div
-            class="flex flex-col pt-4 border-b border-slate-200 dark:border-slate-800 md:border-none md:pt-0 md:flex-row md:items-center md:justify-between md:gap-4">
-            <h1 class="page-title">
-                Dashboard
-            </h1>
-
-            <a href="{{ route('purchase-orders.create') }}" class="hidden md:block">
-                <x-primary-button type="button" class="btn-left-icon">
-                    <span class="h-6 w-6">
-                        <i class="fa-solid fa-plus"></i>
-                    </span>
-                    Buat PO Baru
-                </x-primary-button>
-            </a>
-        </div>
+    <div class="content">
+        <x-content-header title="Dashboard" buttonUrl="{{ route('purchase-orders.create') }}" typeButtonUrl="PO" />
 
         <div class="grid grid-cols-2 gap-2 md:gap-4 md:grid-cols-4">
             {{-- TOTAL ORDER --}}
@@ -70,7 +55,7 @@
                     <div class="flex items-start justify-between">
                         <div class="flex flex-col gap-2">
                             <p class="text-base text-slate-500 dark:text-slate-400">
-                                Pengiriman
+                                Proses Pengiriman
                             </p>
 
                             <p class="text-2xl font-semibold">
@@ -110,7 +95,7 @@
         </div>
 
         {{-- NEW ACTIVITY --}}
-        <div class="card overflow-hidden">
+        <div class="card overflow-hidden ">
             <div class="card-header flex items-center justify-between">
                 <h2 class="text-lg font-semibold text-slate-900 dark:text-white">
                     Aktivitas Terbaru
@@ -122,9 +107,9 @@
                 </a>
             </div>
 
-            @foreach ($recentOrders as $order)
-                <div class="px-2 py-2 grid grid-cols-1 md:grid-cols-2 md:gap-4">
-                    <div class="flex items-center gap-2">
+            <div class="px-2 py-2 grid grid-cols-1 divide-y divide-slate-200 dark:divide-slate-800">
+                @foreach ($recentOrders as $order)
+                    <div class="p-2 flex items-center gap-4 ">
                         <span
                             class="h-6 w-6 flex items-center justify-center rounded-full text-blue-600 dark:text-blue-400">
                             <i class="fa-solid fa-circle text-xs"></i>
@@ -170,14 +155,13 @@
                             {{ $order->po_number }} {{ $status }}
                         </p>
                     </div>
-                </div>
-            @endforeach
+                @endforeach
+            </div>
         </div>
     </div>
 
     {{-- Button for create PO Mobile --}}
-    <div
-        class="absolute bottom-16 text-center justify-center z-50 p-4 w-full border-t border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900 md:hidden">
+    <x-bottom-action-bar>
         <a href="{{ route('purchase-orders.create') }}" class="md:hidden">
             <x-primary-button type="button" class="btn-left-icon w-full">
                 <span class="h-6 w-6">
@@ -186,5 +170,5 @@
                 Buat PO Baru
             </x-primary-button>
         </a>
-    </div>
+    </x-bottom-action-bar>
 </x-app-layout>

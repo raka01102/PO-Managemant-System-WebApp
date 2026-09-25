@@ -11,14 +11,8 @@
             ])
             : collect();
     @endphp
-    <div class="mx-auto max-w-7xl space-y-4 px-4 md:px-6 md:py-4 lg:px-8" x-data="purchaseOrderConfirm({{ Js::from($initialItems) }})">
-        {{-- HEADER --}}
-        <div
-            class="flex flex-col pt-4 border-b border-slate-200 dark:border-slate-800 md:border-none md:pt-0 md:flex-row md:items-center md:justify-between md:gap-4">
-            <h1 class="page-title">
-                Konfirmasi Purchase Order
-            </h1>
-        </div>
+    <div class="content" x-data="purchaseOrderConfirm({{ Js::from($initialItems) }})">
+        <x-content-header :isIndex="null" title="Konfirmasi Purchase Order" />
 
         {{-- ALERT --}}
         <div class="card">

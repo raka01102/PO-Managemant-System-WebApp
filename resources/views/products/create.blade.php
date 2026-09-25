@@ -1,21 +1,9 @@
 <x-app-layout>
-    <div class="mx-auto max-w-7xl md:px-6 md:py-4 lg:px-8">
-        {{-- FORM --}}
+    <div class="content">
+        <x-content-header :isIndex="false" title="Buat Produk Baru" unDoUrl="{{ route('products.index') }}" />
+
         <form method="POST" action="{{ route('products.store') }}">
             @csrf
-            {{-- HEADER --}}
-            <div
-                class="flex px-4 pt-4 border-b border-slate-200 dark:border-slate-800 md:border-none md:pt-0 md:flex-row items-center md:justify-between">
-                <a href="{{ route('products.index') }}" class="md:hidden mr-2">
-                    <span class="h-8 w-8 md:h-10 md:w-10">
-                        <i class="fa-solid fa-arrow-left"></i>
-                    </span>
-                </a>
-
-                <h1 class="page-title">
-                    Buat Produk Baru
-                </h1>
-            </div>
 
             @if ($errors->any())
                 <div class="bg-red-100 p-4 rounded">
@@ -27,7 +15,7 @@
                 </div>
             @endif
 
-            <div class="card m-4">
+            <div class="card">
                 <div class="flex flex-col p-2 md:p-4 space-y-2 md:space-y-4">
                     {{-- Product Code --}}
                     <div>
@@ -61,38 +49,10 @@
                             autocomplete="price" oninput="this.value = this.value.replace(/\D/g, '')" />
                         <x-input-error :messages="$errors->get('price')" class="mt-2" />
                     </div>
-
-                    {{-- Button --}}
-                    <div class="flex gap-4 justify-end">
-                        <a href="{{ route('products.index') }}" class="hidden md:block">
-                            <x-secondary-button class="btn-left-icon">
-                                <span class="h-6 w-6">
-                                    <i class="fa-solid fa-arrow-left"></i>
-                                </span>
-                                Kembali
-                            </x-secondary-button>
-                        </a>
-
-                        <x-primary-button class="btn-left-icon hidden md:block">
-                            <span class="h-6 w-6">
-                                <i class="fa-solid fa-plus"></i>
-                            </span>
-                            Tambah Data
-                        </x-primary-button>
-                    </div>
                 </div>
             </div>
 
-            {{-- Button for create PO Mobile --}}
-            <div
-                class="absolute bottom-16 text-center justify-center z-50 p-4 w-full border-t border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900 md:hidden">
-                <x-primary-button class="btn-left-icon w-full">
-                    <span class="h-6 w-6">
-                        <i class="fa-solid fa-plus"></i>
-                    </span>
-                    Tambah Data
-                </x-primary-button>
-            </div>
+            <x-bottom-action-bar :showOnDesktop="true" type="create" buttonUrl="{{ route('products.index') }}" />
         </form>
     </div>
 </x-app-layout>

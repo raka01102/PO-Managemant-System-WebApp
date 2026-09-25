@@ -11,18 +11,10 @@ class DashboardController extends Controller
     {
         $recentOrders = PurchaseOrder::with(['customer', 'logs'])
             ->latest()
-            ->take(6)
+            ->take(5)
             ->get();
 
-        $stats = PurchaseOrder::query()
-            ->selectRaw("
-                COUNT(*) as total,
-                SUM(CASE WHEN payment_status = 'paid' THEN 0 ELSE 1 END) as belum_lunas,
-                SUM(CASE WHEN delivery_status = 'delivered' THEN 0 ELSE 1 END) as proses_pengiriman,
-                SUM(CASE WHEN delivery_status = 'delivered' && payment_status = 'paid' THEN 1 ELSE 0 END) as completed
-            ")
-            ->first()
-            ->toArray();
+        $stats = PurchaseOrder::getStat();
 
         return view('dashboard', compact('recentOrders', 'stats'));
     }

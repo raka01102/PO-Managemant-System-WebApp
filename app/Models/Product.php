@@ -4,10 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Traits\GenerateCode;
 
 class Product extends Model
 {
     use SoftDeletes;
+    use GenerateCode;
+
     protected $table = 'products';
 
     protected $fillable = [
@@ -19,19 +22,7 @@ class Product extends Model
 
     public static function generateCodeProduct()
     {
-        $lastProduct = self::latest('id')->first();
-
-        $lastCode = 0;
-
-        if ($lastProduct) {
-            $parts = explode('-', $lastProduct->code);
-
-            $lastCode = (int) end($parts);
-        }
-
-        $nextCode = $lastCode + 1;
-
-        return 'PRD-' . str_pad($nextCode, 4, '0', STR_PAD_LEFT);
+        return static::generateCode('PRD', 'code');
     }
 
     public function purchaseOrderItems()

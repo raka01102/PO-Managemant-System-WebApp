@@ -45,7 +45,7 @@ class PurchaseOrderController extends Controller
             })
             ->when($filter, function ($query, $filter) {
                 match ($filter) {
-                    'no_sj' => $query->where('delivery_status', 'draft'),
+                    'draft' => $query->where('delivery_status', 'draft'),
                     'shipping' => $query->whereIn('delivery_status', ['partially_delivered', 'delivered']),
                     'unpaid' => $query->where('delivery_status', 'completed')->where('payment_status', 'unpaid'),
                     'partial' => $query->where('delivery_status', 'completed')->where('payment_status', 'partial'),

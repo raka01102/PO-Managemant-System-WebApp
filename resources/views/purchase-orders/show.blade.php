@@ -1,17 +1,7 @@
 <x-app-layout>
     <div class="content pb-56 sm:pb-4" x-data="purchaseOrderShowManager()">
-        {{-- HEADER --}}
-        <div class="content-header">
-            <a href="{{ route('purchase-orders.index') }}" class="md:hidden mr-2">
-                <span class="h-8 w-8 md:h-10 md:w-10">
-                    <i class="fa-solid fa-arrow-left"></i>
-                </span>
-            </a>
-
-            <h1 class="page-title">
-                Detail Purchase Order
-            </h1>
-        </div>
+        <x-content-header :isIndex="false" title="Detail Purchase Order"
+            unDoUrl="{{ route('purchase-orders.index') }}" />
 
         <div class="hidden lg:block card">
             <div class="card-body">
@@ -287,26 +277,5 @@
         </div>
     </div>
 
-    <x-bottom-action-bar>
-        <div class="flex flex-col w-full space-y-2">
-            <a href="{{ route('purchase-orders.payment', $purchaseOrder) }}">
-                <x-secondary-button class="btn-left-icon !bg-emerald-600 !hover:bg-emerald-700 !h-full !w-full">
-                    <i class="fa-solid fa-wallet text-xl"></i>
-                    Update Pembayaran
-                </x-secondary-button>
-            </a>
-            <a href="{{ route('purchase-orders.shipping', $purchaseOrder) }}">
-                <x-primary-button type="button" class="btn-left-icon !h-full !w-full">
-                    <i class="fa-solid fa-truck-fast text-xl"></i>
-                    Update Pengiriman
-                </x-primary-button>
-            </a>
-            <a href="{{ route('purchase-orders.edit', $purchaseOrder) }}">
-                <x-info-button class="btn-left-icon !h-full !w-full">
-                    <i class="fa-solid fa-pen-to-square text-xl"></i>
-                    Edit PO
-                </x-info-button>
-            </a>
-        </div>
-    </x-bottom-action-bar>
+    <x-bottom-action-bar type="showPO" :paymentUrl="route('purchase-orders.payment', $purchaseOrder)" :shippingUrl="route('purchase-orders.shipping', $purchaseOrder)" :editUrl="route('purchase-orders.edit', $purchaseOrder)" />
 </x-app-layout>
