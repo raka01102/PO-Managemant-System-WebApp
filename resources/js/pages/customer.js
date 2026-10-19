@@ -1,10 +1,10 @@
 window.customerManager = () => ({
     customer: {},
-    actionurl: '',
+    actionUrl: '',
 
     initDelete(customer) {
         this.customer = customer;
-        this.actionurl = `/customers/${customer.id}`;
+        this.actionUrl = `/customers/${customer.id}`;
         this.$dispatch('open-modal', 'delete-customer-modal');
     }
 })

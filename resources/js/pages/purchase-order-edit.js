@@ -1,88 +1,69 @@
-import { createEmptyItem, calculateItemSubTotal, calculateTotalQty, calculateGrandTotal } from "../utils/poCalculations"
+import {
+    createItems,
+    addItem,
+    removeItem,
+} from '../features/purchase-order/items';
 
-function createNewItem() {
-    const base = createEmptyItem()
+import {
+    calculateItemSubTotal,
+    calculateTotalQty,
+    calculateGrandTotal,
+} from '../features/purchase-order/calculations';
 
-    return {
-        uid: base.id,
-        id: '',
-        name: base.name,
-        quantity: base.quantity,
-        unit: base.unit,
-        price_at_time: base.price_at_time,
-    }
-}
+import { formatRupiah } from '../utils/currency';
 
-window.purchaseOrderEditManager = (initialCustomerName = '', initialItems = [], initialErrors = {}) => ({
+window.purchaseOrderEditManager = (
+    initialCustomerName = '',
+    initialItems = [],
+    initialErrors = {}
+) => ({
     customer_name: initialCustomerName,
     items: [],
     suggestions: [],
-
     errors: {},
 
     init() {
-        if (!Array.isArray(initialItems) || initialItems.length === 0) {
-            this.items = [createNewItem()]
-        } else {
-            this.items = initialItems.map(item => ({
-                uid: crypto.randomUUID(),
-                id: item.id ?? '',
-                name: item.name ?? '',
-                quantity: item.quantity ?? '',
-                unit: item.unit ?? '',
-                price_at_time: item.price_at_time ?? '',
-            }))
-        }
+        this.items = createItems(initialItems);
 
-        this.errors = (initialErrors && typeof initialErrors === 'object')
-            ? initialErrors
-            : {}
+        this.errors =
+            initialErrors &&
+            typeof initialErrors === 'object'
+                ? initialErrors
+                : {};
     },
 
     addItem() {
-        this.items.push(createNewItem())
+        addItem(this.items);
     },
 
     removeItem(index) {
-        if (this.items.length <= 1) {
+        const removed = removeItem(this.items, index);
+
+        if (!removed) {
             this.$dispatch(
                 'open-modal',
                 'error-table-modal'
-            )
-            return
+            );
         }
-        this.items.splice(index, 1)
-    },
-
-    async searchCustomers() {
-        if (this.customer_name.length < 2) {
-            this.suggestions = []
-            return
-        }
-        const response = await fetch(
-            `/customers/search?search=${this.customer_name}`
-        )
-        this.suggestions = await response.json()
-    },
-
-    selectCustomer(customer) {
-        this.customer_name = customer.name
-        this.suggestions = []
     },
 
     itemSubTotal(item) {
-        return calculateItemSubTotal(item)
+        return calculateItemSubTotal(item);
     },
 
     get totalItems() {
-        return this.items.length
+        return this.items.length;
     },
 
     get totalQty() {
-        return calculateTotalQty(this.items)
+        return calculateTotalQty(this.items);
     },
 
     get grandTotal() {
-        return calculateGrandTotal(this.items)
+        return calculateGrandTotal(this.items);
     },
-})
+
+    formatRupiah(value) {
+        return formatRupiah(value);
+    },
+});

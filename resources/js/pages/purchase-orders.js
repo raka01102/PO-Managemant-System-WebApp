@@ -1,5 +1,4 @@
 window.purchaseOrderManager = () => ({
-
     actionUrl: '',
 
     routes: {
@@ -19,27 +18,40 @@ window.purchaseOrderManager = () => ({
     },
 
     init() {
+        const dataset = this.$root.dataset
 
-        this.routes.update =
-            this.$root.dataset.updateUrl
+        this.routes.update = dataset.updateUrl
+        this.routes.delete = dataset.deleteUrl
+        this.routes.updateStatus = dataset.updateStatusUrl
+        this.routes.updatePayment = dataset.updatePaymentUrl
+    },
 
-        this.routes.delete =
-            this.$root.dataset.deleteUrl
+    buildRoute(url, id) {
+        if(!url || !id) {
+            return
+        }
 
-        this.routes.updateStatus =
-            this.$root.dataset.updateStatusUrl
-
-        this.routes.updatePayment =
-            this.$root.dataset.updatePaymentUrl
+        return url.replace(':id', id)
     },
 
     async initEdit(id) {
+        if(!id) {
+            return
+        }
 
-        const response =
-            await fetch(`/purchase-orders/${id}/edit`)
+        const url = this.buildRoute(this.routes.edit, id)
 
-        this.po =
-            await response.json()
+        if(!url) {
+            return
+        }
+
+        const response = await fetch(url)
+
+        if(!response.ok) {
+            return
+        }
+
+        this.po = await response.json()
 
         this.$dispatch('open-modal', 'po-modal')
     },
@@ -49,14 +61,12 @@ window.purchaseOrderManager = () => ({
         this.po.id = id
         this.po.po_number = poNumber
 
-        this.actionUrl =
-            this.routes.delete.replace(':id', id)
+        this.actionUrl = this.buildRoute(this.routes.delete, id)
 
         this.$dispatch('open-modal', 'delete-po-modal')
     },
 
     initProgress(data) {
-
         this.po = { ...data }
 
         this.$dispatch(
@@ -66,15 +76,10 @@ window.purchaseOrderManager = () => ({
     },
 
     getStatusAction() {
-
-        return this.routes.updateStatus
-            .replace(':id', this.po.id)
+        return this.buildRoute(this.routes.updateStatus, this.po.id)
     },
 
     getPaymentAction() {
-
-        return this.routes.updatePayment
-            .replace(':id', this.po.id)
+        return this.buildRoute(this.routes.updatePayment, this.po.id)
     }
-
 })

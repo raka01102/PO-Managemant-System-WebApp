@@ -1,0 +1,5 @@
+window.purchaseOrderPaymentManager = () => ({
+    init() {
+        //
+    }
+})

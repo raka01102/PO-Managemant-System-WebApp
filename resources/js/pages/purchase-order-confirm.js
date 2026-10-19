@@ -1,87 +1,47 @@
-import { createEmptyItem, calculateItemSubTotal, calculateGrandTotal, calculateTotalQty } from "../utils/poCalculations"
+import {
+    createItems,
+    addItem,
+    removeItem,
+} from '../features/purchase-order/items';
+
+import {
+    calculateItemSubTotal,
+    calculateTotalQty,
+    calculateGrandTotal,
+} from '../features/purchase-order/calculations';
+
+import { validationItems } from '../features/purchase-order/validation';
+
+import { formatRupiah } from '../utils/currency';
 
 window.purchaseOrderConfirm = (initialItems = []) => ({
-
     items: [],
-
     isSubmitting: false,
-
     errors: {},
 
     init() {
-        if (!Array.isArray(initialItems) || initialItems.length === 0) {
-            this.items = [this.createItem()]
-        } else {
-            this.items = initialItems.map(item => this.createItem(item))
-        }
-    },
-
-    createItem(source = null) {
-        const base = createEmptyItem()
-
-        return {
-            uid: crypto.randomUUID(),
-            id: source?.id ?? '',
-            name: source?.name ?? '',
-            quantity: source?.quantity ?? '',
-            unit: source?.unit ?? '',
-            price_at_time: source?.price_at_time ?? '',
-        }
+        this.items = createItems(initialItems);
     },
 
     addItem() {
-        this.items.push(this.createItem())
+        addItem(this.items);
     },
 
     removeItem(index) {
-        if (this.items.length <= 1) {
+        const removed = removeItem(this.items, index);
+
+        if (!removed) {
             this.$dispatch(
                 'open-modal',
                 'error-table-modal'
-            )
-
-            return
+            );
         }
-
-        this.items.splice(index, 1)
     },
 
     validate() {
-        this.errors = {}
+        this.errors = validationItems(this.items);
 
-        this.items.forEach((item, index) => {
-            if (!item.name || !item.name.trim()) {
-                this.errors[`items.${index}.name`] = [
-                    'Nama barang wajib diisi'
-                ]
-            }
-
-            if (!item.unit || !item.unit.trim()) {
-                this.errors[`items.${index}.unit`] = [
-                    'Satuan wajib diisi'
-                ]
-            }
-
-            if (
-                item.quantity === '' ||
-                Number(item.quantity) < 1
-            ) {
-                this.errors[`items.${index}.quantity`] = [
-                    'Jumlah barang minimal 1'
-                ]
-            }
-
-            if (
-                item.price_at_time === '' ||
-                Number(item.price_at_time) < 0
-            ) {
-                this.errors[`items.${index}.price_at_time`] = [
-                    'Harga barang tidak valid'
-                ]
-            }
-        })
-
-        return Object.keys(this.errors).length === 0
+        return Object.keys(this.errors).length === 0;
     },
 
     submitForm() {
@@ -89,56 +49,49 @@ window.purchaseOrderConfirm = (initialItems = []) => ({
             this.$dispatch(
                 'open-modal',
                 'validation-modal'
-            )
+            );
 
-            return
+            return;
         }
 
         this.$dispatch(
             'open-modal',
             'confirm-save-modal'
-        )
+        );
     },
 
     confirmSubmit() {
-        this.isSubmitting = true
+        this.isSubmitting = true;
 
         document
             .getElementById('purchaseOrderForm')
-            .submit()
+            .submit();
     },
 
     get totalItems() {
-        return this.items.length
+        return this.items.length;
     },
 
     get totalQty() {
-        return calculateTotalQty(this.items)
+        return calculateTotalQty(this.items);
     },
 
     itemSubTotal(item) {
-        return calculateItemSubTotal(item)
+        return calculateItemSubTotal(item);
     },
 
     get grandTotal() {
-        return calculateGrandTotal(this.items)
+        return calculateGrandTotal(this.items);
     },
 
     formatRupiah(value) {
-        return new Intl.NumberFormat(
-            'id-ID',
-            {
-                style: 'currency',
-                currency: 'IDR',
-                minimumFractionDigits: 0,
-            }
-        ).format(value || 0)
+        return formatRupiah(value);
     },
 
     previewDokumen() {
         this.$dispatch(
             'open-modal',
             'preview-file-modal'
-        )
+        );
     },
-})
+});

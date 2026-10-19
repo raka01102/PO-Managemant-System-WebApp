@@ -1,16 +1,25 @@
+const THEME_STORAGE_KEY = 'theme'
+
 window.layout = () => ({
-    darkMode:
-        localStorage.getItem('theme') === 'dark' ||
-        (
-            !localStorage.getItem('theme')
-            &&
-            window.matchMedia('(prefers-color-scheme: dark)').matches
-        ),
+    darkMode: false,
 
     sidebarOpen: false,
 
     init() {
+        this.darkMode = this.getInitialTheme()
         this.applyTheme()
+    },
+
+    getInitialTheme() {
+        const storedTheme = localStorage.getItem(THEME_STORAGE_KEY)
+
+        if(storedTheme === 'dark') {
+            return true
+        } else {
+            return false
+        }
+
+        return window.matchMedia('prefers-color-scheme: dark').matches
     },
 
     applyTheme() {
